@@ -5,7 +5,6 @@ namespace Guoxiangke\VbotTuLing;
 use Hanson\Vbot\Extension\AbstractMessageHandler;
 
 use Hanson\Vbot\Contact\Groups;
-use Hanson\Vbot\Contact\Myself;
 use Hanson\Vbot\Message\Text;
 use Illuminate\Support\Collection;
 
@@ -27,39 +26,31 @@ class VbotTuLing extends AbstractMessageHandler
 
         /** @var Groups $groups */
         $groups = vbot('groups');
-
-        // 获取自己实例
-        $myself = vbot('myself');
-        //自动转发管理员@群名称发的消息给机器人，然后去掉@群名后转发到对应的群里。
-        //TODO; 确定管理员标准按照昵称？
-        //begin of 群管理
+        //TODO 第一次需要@我
+        //TODO 如果其他返回消息了，不用机器人！
         foreach ($groups as $gid => $group) {
-            // vbot('console')->log($gid,$group['NickName']);
-            // vbot('console')->log($group['NickName'],'<pre>'.print_r($group,1));
-            // vbot('console')->log($group['NickName'],'<pre>'.print_r($message,1));
-
             //////begin!!//////
-            
-             if ($message['from']['NickName'] === $group['NickName']) {
-                //处理文本消息！//TODO 第一次需要@我
-                if ($message['type'] === 'text') {
-                    $keywords_ingroup = ['群规','关注','名片'];
-                    if(!in_array($message['content'], $keywords_ingroup)){
-                        if($message['fromType'] !== 'Self' && $message['from']['ChatRoomOwner']==$myself->username){
-                            //不是自己的群，不回复！
-                            //自己不回复自己！
-                            // if($message['isAt']) //不是@我不回！
-                            //Extension on/info 不要回复！
-                            $pattern ='/ (on|off|info)$/';
-                            if(!preg_match($pattern, $message['content']))
-                                Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
-                        }
+            if ($message['type'] === 'text') {
+                $keywords_ingroup = ['群规','关注','名片'];
+                if(!in_array($message['content'], $keywords_ingroup)){
+                    if($message['fromType'] !== 'Self' //自己不回复自己！
+                        && (//不是自己的群，不回复！
+                            (isset($group['IsOwner']) && $group['IsOwner'])
+                            || (isset($message['from']['IsOwner']) && $message['from']['IsOwner'])
+                            )
+                        ){
+                        // if($message['isAt']) {
+                        //     //不是@我不回！
+                        // }
+                        //Extension on/info 不要回复！
+                        $pattern ='/ (on|off|info)$/';
+                        if(!preg_match($pattern, $message['content']))
+                            Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
                     }
                 }
-                //other type with content!!!
             }
             //////end!!//////
-        }//end of 群管理
+        }
     }
 
     private static function reply($content, $id)
