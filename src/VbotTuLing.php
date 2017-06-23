@@ -40,8 +40,8 @@ class VbotTuLing extends AbstractMessageHandler
 
             //////begin!!//////
             
-            if ($message['from']['NickName'] === $group['NickName']) {
-                //处理文本消息！
+             if ($message['from']['NickName'] === $group['NickName']) {
+                //处理文本消息！//TODO 第一次需要@我
                 if ($message['type'] === 'text') {
                     $keywords_ingroup = ['群规','关注','名片'];
                     if(!in_array($message['content'], $keywords_ingroup)){
@@ -49,12 +49,13 @@ class VbotTuLing extends AbstractMessageHandler
                             //不是自己的群，不回复！
                             //自己不回复自己！
                             // if($message['isAt']) //不是@我不回！
-                            //TODO 第一次需要@我
-                             Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
+                            //Extension on/info 不要回复！
+                            $pattern ='/ (on|off|info)$/';
+                            if(!preg_match($pattern, $message['content']))
+                                Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
                         }
                     }
                 }
-
                 //other type with content!!!
             }
             //////end!!//////
