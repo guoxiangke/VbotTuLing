@@ -4,10 +4,8 @@ namespace Guoxiangke\VbotTuLing;
 
 use Hanson\Vbot\Extension\AbstractMessageHandler;
 
-use Hanson\Vbot\Contact\Friends;
 use Hanson\Vbot\Contact\Groups;
 use Hanson\Vbot\Contact\Myself;
-use Hanson\Vbot\Message\Card;
 use Hanson\Vbot\Message\Text;
 use Illuminate\Support\Collection;
 
@@ -26,8 +24,6 @@ class VbotTuLing extends AbstractMessageHandler
 
     public function handler(Collection $message)
     {
-    	/** @var Friends $friends */
-        $friends = vbot('friends');
 
         /** @var Groups $groups */
         $groups = vbot('groups');
@@ -38,31 +34,24 @@ class VbotTuLing extends AbstractMessageHandler
         //TODO; 确定管理员标准按照昵称？
         //begin of 群管理
         foreach ($groups as $gid => $group) {
-            //check must be 群主
-            if( isset($group['IsOwner']) && !$group['IsOwner']) {
-                continue;
-            }elseif( !isset($group['ChatRoomOwner']) || $group['ChatRoomOwner'] !== $myself->username) {
-                continue;
-            }
+            // vbot('console')->log($gid,$group['NickName']);
+            // vbot('console')->log($group['NickName'],'<pre>'.print_r($group,1));
+            // vbot('console')->log($group['NickName'],'<pre>'.print_r($message,1));
 
             //////begin!!//////
-            // vbot('console')->log($group['NickName'],'<pre>'.print_r($message,1));
-            // vbot('console')->log($gid,$group['NickName']);
+            
             if ($message['from']['NickName'] === $group['NickName']) {
                 //处理文本消息！
-                $content = $message['content'];
                 if ($message['type'] === 'text') {
-                    switch ($content) {
-                        case '群规':
-                            $content='xxx查看了群规则，棒棒哒👍';
-                            Text::send($message['from']['UserName'], $rule);
-                            break;
-                        default:
+                    $keywords_ingroup = ['群规','关注','名片'];
+                    if(!in_array($message['content'], $keywords_ingroup)){
+                        if($message['fromType'] !== 'Self' && $message['from']['ChatRoomOwner']==$myself->username){
+                            //不是自己的群，不回复！
                             //自己不回复自己！
-                            // vbot('console')->log('group_change:', '<pre>'.print_r($message,1));
-                            if($message['fromType'] !== 'Self')
-                                 Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
-                            break;
+                            // if($message['isAt']) //不是@我不回！
+                            //TODO 第一次需要@我
+                             Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
+                        }
                     }
                 }
 
