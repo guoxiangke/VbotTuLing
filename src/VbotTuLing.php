@@ -44,8 +44,10 @@ class VbotTuLing extends AbstractMessageHandler
                         // }
                         //Extension on/info 不要回复！
                         $pattern ='/ (on|off|info)$/';
-                        if(!preg_match($pattern, $message['content']))
+                        if(!preg_match($pattern, $message['content'])){
                             Text::send($message['from']['UserName'], static::reply($message['pure'], $message['from']['UserName']));
+                            return;
+                        }
                     }
                 }
             }
