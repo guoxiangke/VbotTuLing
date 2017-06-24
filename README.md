@@ -3,7 +3,7 @@
 ## 安装
 
 ```
-composer require guoxiangke/tuling
+composer require guoxiangke/vbot-tuling
 ```
 
 ## 扩展属性
